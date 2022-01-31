@@ -60,9 +60,9 @@ def create_bootstrap_node(port):
 
 
 def main():
-    
-    port = args.port + 1000
-    create_bootstrap_node(port)
+    port = 1001
+    myport = args.port + 1002
+    connect_to_bootstrap_node(port, myport)
     '''
     args = parse_arguments()
     for x in range(args.nodes):
