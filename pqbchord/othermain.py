@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from kademlia.network import Server
 
 async def startNodes(nnodes):
