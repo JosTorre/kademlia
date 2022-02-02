@@ -1,0 +1,14 @@
+import asyncio
+from kademlia.network import Server
+
+async def runNetwork():
+    node = Server()
+    await node.listen(5678)
+    await node.bootstrap([("123.123.123.123", 5678)])
+    await node.set("my-key", "my awesome value")
+    result = await node.get("my-key")
+    print(result)
+
+
+
+asyncio.run(runNetwork())
