@@ -1,6 +1,6 @@
 from operator import itemgetter
 import heapq
-
+import socket
 
 class Node:
     """
@@ -22,6 +22,22 @@ class Node:
         self.ip = ip  # pylint: disable=invalid-name
         self.port = port
         self.long_id = int(node_id.hex(), 16) # hex(node_id)
+        self.sock = socket.socket()
+# New addition
+    def startCommunication(self, port):
+        self.sock.bind(('127.0.0.1', int(port)))
+        self.sock.listen(5)
+        print('Node listening on port ', port)
+        while True:
+            c, addr = self.sock.accept()
+            data = c.recv(1024)
+            print("Received data on Socket: ", data)
+            c.close()
+# New addition
+    def sendData(self, addr, data):
+        self.sock.connect(addr)
+        self.sock.send(data)
+        self.sock.close()
 
     def same_home_as(self, node):
         return self.ip == node.ip and self.port == node.port

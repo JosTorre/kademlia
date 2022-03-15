@@ -82,6 +82,18 @@ class KademliaProtocol(RPCProtocol):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.store(address, self.source_node.id, key, value)
         return self.handle_call_response(result, node_to_ask)
+    
+    async def ask_transaction(self, node_to_ask, tx):
+        # Treat the transaction
+        return self.handle_transaction_response(tx, node_to_ask)
+
+    async def ask_verify_transaction(self, node_to_ask, tx):
+        # Treat the transaction
+        return tx
+
+    async def ask_verify_block(self, node_to_ask, txs):
+        # Treat transactions and generate Block
+        return block
 
     def welcome_if_new(self, node):
         """
@@ -126,3 +138,34 @@ class KademliaProtocol(RPCProtocol):
         log.info("got successful response from %s", node)
         self.welcome_if_new(node)
         return result
+
+    def handle_transaction_response(self, result, node):
+        """
+        If we get a response, the transaction was accepted
+        otherwise it was rejected by payer.
+        """
+        if not result[0]:
+            log.warning("no response from %s, transaction rejected ", node)
+        elif result[1] is None:
+            log.warning("no response from %s, transaction rejected ", node)
+        else:
+            log.info("Transaction accepted by payer node ", node)
+            return result
+
+    def handle_transaction_validation(self, result, node):
+        if not result[0]:
+            log.warning("no response from %s, transaction not validated by node ", node)
+        elif result[1] is None:
+            log.warning("no response from %s, transaction invalidated by node ", node)
+        else:
+            log.info("Transaction validated by node ", node)
+            return result
+
+    def handle_block_validation(self, result, node):
+        if not result[0]:
+            log.warning("no response from %s, Block wasn't validated by ", node)
+        elif result[1] is None:
+            log.warning("no response from %s, Block wasn't validated by ", node)
+        else:
+            log.info("Block validated by node ", node)
+            return result

@@ -7,12 +7,12 @@ import asyncio
 import logging
 import oqs
 
-from kademlia.protocol import KademliaProtocol
-from kademlia.utils import digest
-from kademlia.storage import ForgetfulStorage
-from kademlia.node import Node
-from kademlia.crawling import ValueSpiderCrawl
-from kademlia.crawling import NodeSpiderCrawl
+from mykademlia.protocol import KademliaProtocol
+from mykademlia.utils import digest
+from mykademlia.storage import ForgetfulStorage
+from mykademlia.node import Node
+from mykademlia.crawling import ValueSpiderCrawl
+from mykademlia.crawling import NodeSpiderCrawl
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -51,7 +51,8 @@ class Server:
 
         self.spk = self.signer.generate_keypair()
         self.ssk = self.signer.export_secret_key()
-        print('Signature Keys generated. Pub Key: ', self.spk)
+        print('Signature Keys for node ', self.node.long_id, ' generated')
+        print('PQ Signature ', self.spk)
 
     def stop(self):
         if self.transport is not None:
@@ -80,7 +81,9 @@ class Server:
         print("Node ", self.node.long_id, " listening")
         self.transport, self.protocol = await listen
         # finally, schedule refreshing table
+        #self.node.startCommunication(port)
         self.refresh_table()
+        #self.node.sendData(("127.0.0.1", port+1), "Holaaa")
 
     def refresh_table(self):
         log.debug("Refreshing routing table")
@@ -252,6 +255,15 @@ class Server:
                                                self.save_state_regularly,
                                                fname,
                                                frequency)
+
+
+    def publishTransaction(self, payer, amount):
+        """
+        Send a transaction to the payer.
+        """
+        trx = "This is a transaction"
+        res = self.protocol.ask_transaction(("127.0.0.1",1002), trx)
+        print(res)
 
 
 def check_dht_value_type(value):

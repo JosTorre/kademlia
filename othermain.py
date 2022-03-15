@@ -3,7 +3,8 @@ import logging
 from mykademlia.network import Server
 
 async def startNodes(nnodes):
-    node=[]
+    global node
+    node = []
     for i in range(nnodes):
         node.append(Server())
         print("Created node: ", node[i].node.long_id)
@@ -24,4 +25,6 @@ async def bootstrapNodes(node):
         print("Node ", node[i].node.long_id, " connected to port ", toport)
 
 nnodes = input("Number of Nodes: ")
-node = asyncio.run(startNodes(int(nnodes)))
+asyncio.run(startNodes(int(nnodes)))
+#asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
+print("Finish")
