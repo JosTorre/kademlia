@@ -2,7 +2,6 @@ import asyncio
 import logging
 import pickle
 import random
-import time
 from mykademlia.network import Server
 from mykademlia.blockchain import quanTurm
 
@@ -37,22 +36,20 @@ async def runLedger(nnodes, ntxs, nblks):
     #Make transactions and mine blocks
     for b in range(nblks):
         for n in range(ntxs):
-            receiver = random.randint(0,nnodes-1)
-            sender = random.randint(0,nnodes-1)
-            tx = qLed.makeTx(node[sender].node.long_id, node[receiver].node.long_id, str(random.randint(0,100)))
+            receiver = node[random.randint(0,nnodes-1)].node.long_id
+            sender = node[random.randint(0,nnodes-1)].node.long_id
+            tx = qLed.makeTx(sender, receiver, str(random.randint(0,100)))
             print('Transaction n : ', tx)
-            await node[receiver].set(tx.get('type'),pickle.dumps(tx))
+            await node[receiver].set(tx.get('type',tx))
         #Get former Block
         if b == 0:
             lblk = await node[receiver].get('Genesis')
-            lblk = pickle.loads(lblk)
         else:
             lblk = await node[receiver].get('LastBlock')
-            lblk = pickle.loads(lblk)
         print('Retrieved last Block: ', lblk)
         blk1 = qLed.mineBlock(lblk)
         #MISSING Modify former block and save in DHT
-        await node[receiver].set(blk1.get('type'),pickle.dumps(blk1))
+        await node[receiver].set(blk1.set('type'),blk1)
         print('Block: ', blk1, ' inserted')
 
 async def main():
@@ -66,8 +63,7 @@ async def main():
     #Start and run the Blockchain
     await runLedger(nnodes, ntxs, nblks) 
 
-start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
 #asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-print("Finished in --- %s seconds --- " % (time.time() - start_time))
+print("Finish")
