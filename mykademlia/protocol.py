@@ -1,12 +1,13 @@
 import random
 import asyncio
 import logging
+import pickle
 
 from rpcudp.protocol import RPCProtocol
 
-from kademlia.node import Node
-from kademlia.routing import RoutingTable
-from kademlia.utils import digest
+from mykademlia.node import Node
+from mykademlia.routing import RoutingTable
+from mykademlia.utils import digest
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -61,6 +62,35 @@ class KademliaProtocol(RPCProtocol):
             return self.rpc_find_node(sender, nodeid, key)
         return {'value': value}
 
+    def rpc_approveTx(self, sender, nodeid, stx):
+        source = Node(nodeid, sender[0], sender[1])
+        self.welcome_if_new(source)
+        #tx = pickle.loads(stx)
+        print("I AM HERE --------!!!!!")
+        log.debug("got a transaction request from %s, signing transaction", sender)
+        #signed_tx = signTx('sender', self.signer, self.spk, tx)
+        return stx #signed_tx
+
+    def rpc_verifyTx(self, sender, nodeid, tx):
+        source = Node(nodeid, sender[0], sender[1])
+        self.welcom_if_new(source)
+        log.debug("got a verification request from %s for a transaction", sender)
+        verified_tx = verifyTx(tx, self.verifier, self.signer)
+        if verified_tx == False:
+            print("Transaction verification failed")
+            return False
+        return verified_tx
+
+    def rpc_povBlk(self, sender, nodeid, prvblk, blk):
+        source = Node(nodeid, sender[0], sender[1])
+        self.welcom_if_new(source)
+        log.debug("got a PoV request from %s for a block", sender)
+        pov_blk = povBlk(prvblk, blk, self.signer, self.verifier)
+        if pov_blk == False:
+            print("Block PoV failed")
+            return False
+        return pov_blk
+
     async def call_find_node(self, node_to_ask, node_to_find):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.find_node(address, self.source_node.id,
@@ -83,17 +113,23 @@ class KademliaProtocol(RPCProtocol):
         result = await self.store(address, self.source_node.id, key, value)
         return self.handle_call_response(result, node_to_ask)
     
-    async def ask_transaction(self, node_to_ask, tx):
-        # Treat the transaction
-        return self.handle_transaction_response(tx, node_to_ask)
+    async def call_approveTx(self, node_to_ask, tx):
+        address = (node_to_ask.node.ip, node_to_ask.node.port)
+        print('Going to call %s for tx %s', node_to_ask, tx)
+        result = await self.approveTx(address, self.source_node.id, tx)
+        print("Got ", result)
+        return self.handle_qtcall_response(result, node_to_ask)
 
-    async def ask_verify_transaction(self, node_to_ask, tx):
-        # Treat the transaction
-        return tx
+    async def call_verifyTx(self, node_to_ask, tx):
+        address = (node_to_ask.ip, node_to_ask.port)
+        print('Bin hier')
+        result = await self.verifyTx(address, self.source_node.id, tx)
+        return self.handle_call_response(result, node_to_ask)
 
-    async def ask_verify_block(self, node_to_ask, txs):
-        # Treat transactions and generate Block
-        return block
+    async def call_povBlk(self, node_to_ask, blk):
+        address = (node_to_ask.ip, node_to_ask.port)
+        result = await self.povBlk(address, self.source_node.id, blk)
+        return self.handle_call_response(result, node_to_ask)
 
     def welcome_if_new(self, node):
         """
@@ -139,33 +175,17 @@ class KademliaProtocol(RPCProtocol):
         self.welcome_if_new(node)
         return result
 
-    def handle_transaction_response(self, result, node):
+    def handle_qtcall_response(self, result, node):
         """
-        If we get a response, the transaction was accepted
-        otherwise it was rejected by payer.
+        If we get a response, add the node to the routing table.  If
+        we get no response, make sure it's removed from the routing table.
         """
-        if not result[0]:
-            log.warning("no response from %s, transaction rejected ", node)
-        elif result[1] is None:
-            log.warning("no response from %s, transaction rejected ", node)
-        else:
-            log.info("Transaction accepted by payer node ", node)
+        print('Result : ', result)
+        if not result:
+            log.warning("no response from %s, removing from router", node)
+            self.router.remove_contact(node)
             return result
-
-    def handle_transaction_validation(self, result, node):
-        if not result[0]:
-            log.warning("no response from %s, transaction not validated by node ", node)
-        elif result[1] is None:
-            log.warning("no response from %s, transaction invalidated by node ", node)
-        else:
-            log.info("Transaction validated by node ", node)
-            return result
-
-    def handle_block_validation(self, result, node):
-        if not result[0]:
-            log.warning("no response from %s, Block wasn't validated by ", node)
-        elif result[1] is None:
-            log.warning("no response from %s, Block wasn't validated by ", node)
-        else:
-            log.info("Block validated by node ", node)
-            return result
+        
+        log.info("got successful response from %s", node)
+        #self.welcome_if_new(node.node.long_id)
+        return result

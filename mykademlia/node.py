@@ -9,7 +9,7 @@ class Node:
     This class should generally not be instantiated directly, as it is a low
     level construct mostly used by the router.
     """
-    def __init__(self, node_id, ip=None, port=None):
+    def __init__(self, node_id, ip="127.0.0.1", port=None):
         """
         Create a Node instance.
 

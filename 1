@@ -67,7 +67,7 @@ class Server:
     def _create_protocol(self):
         return self.protocol_class(self.node, self.storage, self.ksize)
 
-    async def listen(self, port, interface='127.0.0.1'):
+    async def listen(self, port, interface='0.0.0.0'):
         """
         Start listening on the given port.
 
@@ -303,8 +303,7 @@ class Server:
         """
         #dnode = digest(payer.node.id)
         node = Node(payer.node.id)
-        #print('node to call : ', payer.node)
-        """
+        print('node to call : ', node)
         nearest = self.protocol.router.find_neighbors(node)
         if not nearest:
             log.warning("There are no known neighbors to this node %s", payer)
@@ -318,11 +317,6 @@ class Server:
                 print(signed_tx)
                 return signed_tx
         return print('didnt find sender node')
-        """
-        signed_tx = await self.protocol.call_approveTx(payer,tx)
-        print("Signed Transaction by sender: ", pickle.loads(signed_tx[1]))
-        return signed_tx
-
 
 def check_dht_value_type(value):
     """
