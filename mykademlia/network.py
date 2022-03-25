@@ -13,6 +13,7 @@ from mykademlia.storage import ForgetfulStorage
 from mykademlia.node import Node
 from mykademlia.crawling import ValueSpiderCrawl
 from mykademlia.crawling import NodeSpiderCrawl
+from mykademlia.blockchain import quanTurm
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -37,7 +38,9 @@ class Server:
             storage: An instance that implements the interface
                      :class:`~kademlia.storage.IStorage`
         """
-        self.signer = oqs.Signature('Falcon-1024')
+        #self.signer = oqs.Signature('Falcon-1024')
+        #self.verifier = oqs.Signature('Falcon-1024')
+        self.qled = quanTurm()
         self.ksize = ksize
         self.alpha = alpha
         self.storage = storage or ForgetfulStorage()
@@ -46,13 +49,16 @@ class Server:
         self.protocol = None
         self.refresh_loop = None
         self.save_state_loop = None
+        #self.pub_key = self.signer.generate_keypair()
+        #self.prv_key = self.signer.export_secret_key()
 
-    def genSigKeys(self):
-
-        self.spk = self.signer.generate_keypair()
-        self.ssk = self.signer.export_secret_key()
+    def genQKeys(self, algorithm):
+        self.signer = oqs.Signature(algorithm)
+        self.verifier = oqs.Signature(algorithm)
+        self.pub_key = self.signer.generate_keypair()
+        self.prv_key = self.signer.export_secret_key()
         print('Signature Keys for node ', self.node.long_id, ' generated')
-        print('PQ Signature ', self.spk)
+        print('PQ Signature ', self.pub_key)
 
     def stop(self):
         if self.transport is not None:
@@ -65,7 +71,7 @@ class Server:
             self.save_state_loop.cancel()
 
     def _create_protocol(self):
-        return self.protocol_class(self.node, self.storage, self.ksize)
+        return self.protocol_class(self.node, self.storage, self.ksize, self.signer, self.verifier, self.pub_key, self.qled)
 
     async def listen(self, port, interface='127.0.0.1'):
         """
@@ -302,7 +308,7 @@ class Server:
         Send a Tx to a node for signing, and receive it back.
         """
         #dnode = digest(payer.node.id)
-        node = Node(payer.node.id)
+        #node = Node(payer.node.id)
         #print('node to call : ', payer.node)
         """
         nearest = self.protocol.router.find_neighbors(node)
@@ -320,8 +326,24 @@ class Server:
         return print('didnt find sender node')
         """
         signed_tx = await self.protocol.call_approveTx(payer,tx)
-        print("Signed Transaction by sender: ", pickle.loads(signed_tx[1]))
-        return signed_tx
+        doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.signer, self.pub_key)
+        return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
+
+    async def send_verify_Tx(self, signed_tx):
+        tx_hash = digest(pickle.loads(signed_tx).get('hash'))
+        print('Digested hash: ', tx_hash)
+        node = Node(tx_hash)
+        nearest = self.protocol.router.find_neighbors(node)
+        if not nearest:
+            log.warning("There are no known neighbors to this node %s", payer)
+            return None
+        spider = NodeSpiderCrawl(self.protocol, node, nearest, self.ksize, self.alpha)
+        nodes = await spider.find()
+        print('Found Nodes: ', nodes)
+        verifier = nodes[random.randint(0,len(nodes)-1)]
+        print('Verifier node: ', verifier)
+        verified_tx = await self.protocol.call_verifyTx(verifier,signed_tx)
+        return pickle.loads(verified_tx[1])
 
 
 def check_dht_value_type(value):

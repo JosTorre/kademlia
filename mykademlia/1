@@ -27,20 +27,21 @@ class quanTurm():
                 'id':0,
                 'timestamp':time.time(),
                 'prev_hash':0,
-                'hash':hashlib.sha3_256(b'Creator:JoseTorre').hexdigest(),
+                'hash':self.sha.hexdigest(),
             }
         return gen
     
     #This method takes the previous block and returns the next block.
     def mineBlock(self, prev_blk):
         ltxs = json.dumps(self.txs).encode('utf-8')
+        self.sha.update(ltxs)
         blk = {
                 'type':'LastBlock',
                 'id':int(prev_blk.get('id')) + 1,
                 'time':time.time(),
                 'prev_hash':prev_blk.get('hash'),
                 'txs':self.txs,
-                'hash':hashlib.sha3_256(ltxs).hexdigest(),
+                'hash':self.sha.hexdigest(),
                 'povs':'',
                 'povk':'',
             }
@@ -61,11 +62,11 @@ class quanTurm():
             'receiver':receiver,
             }
         ndetail = json.dumps(detail).encode('utf-8')
-        print('NDETAIL 1 : ', ndetail)
+        self.sha.update(ndetail)
         tx = {
                 'type':'Tx' + str(len(self.txs)),
                 'detail':detail,
-                'hash':hashlib.sha3_256(ndetail).hexdigest(),
+                'hash':self.sha.hexdigest(),
                 'svk':'',
                 'rvk':'',
                 'ssig':'',
@@ -92,7 +93,6 @@ class quanTurm():
     #Verifies if the sender and receiver signatures are correct and checks the hash.
     def verifyTx(self, tx, verifk, sigfk, verifpbk):
         tx = pickle.loads(tx)
-        print('Transaction: ', tx)
         #Get data from transaction
         rsig = tx.get('rsig')
         rvk = tx.get('rvk')
@@ -101,24 +101,25 @@ class quanTurm():
         trx = tx.get('detail')
         txhash = tx.get('hash')
         ndetail = json.dumps(trx).encode('utf-8')
+        self.sha.update(ndetail)
         print('receiver sig: ', rsig)
         print('receiver key: ', rvk)
         #Verify hash
-        if txhash == hashlib.sha3_256(ndetail).hexdigest():
+        if txhash == self.sha.hexdigest():
             hasha = True
         else:
-            print('HASH verif: ', txhash, hashlib.sha3_256(ndetail).hexdigest())
-            print('NDETAIL 2 : ', ndetail)
+            print('HASH verif: ', txhash, self.sha.hexdigest())
             hasha = False
         #Verify signatures
+        print('TYPEs: ', type(rsig), type(rvk))
         v1 = verifk.verify(pickle.dumps(trx), rsig, rvk)
         v2 = verifk.verify(pickle.dumps(trx), ssig, svk)
+        print('VERIFI: ', v1, v2)
         #If correct, pov
         if v1 & v2 & hasha: 
             # Add verifyer signature
-            tx['povs'] = sigfk.sign(pickle.dumps(tx))
+            tx['povs'] = sigfk.sign(tx)
             tx['povk'] = verifpbk
-            print('TX ready for insertion :', tx )
             return tx
         else:
             return False

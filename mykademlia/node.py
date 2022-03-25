@@ -1,7 +1,8 @@
 from operator import itemgetter
 import heapq
 import socket
-
+import oqs
+from mykademlia.blockchain import quanTurm
 class Node:
     """
     Simple object to encapsulate the concept of a Node (minimally an ID, but
@@ -23,6 +24,16 @@ class Node:
         self.port = port
         self.long_id = int(node_id.hex(), 16) # hex(node_id)
         self.sock = socket.socket()
+        #self.qled = quanTurm()
+
+#New Addition
+    def genQKeys(self, algorithm):
+        self.signer = oqs.Signature(algorithm)
+        self.verifier = oqs.Signature(algorithm)
+        self.pub_key = self.signer.generate_keypair()
+        self.prv_key = self.signer.export_secret_key()
+        print('Signature Keys for node ', self.long_id, ' generated')
+        print('PQ Signature ', self.pub_key)
 # New addition
     def startCommunication(self, port):
         self.sock.bind(('127.0.0.1', int(port)))
@@ -38,7 +49,7 @@ class Node:
         self.sock.connect(addr)
         self.sock.send(data)
         self.sock.close()
-
+    
     def same_home_as(self, node):
         return self.ip == node.ip and self.port == node.port
 

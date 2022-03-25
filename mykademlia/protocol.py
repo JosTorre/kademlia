@@ -13,12 +13,16 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class KademliaProtocol(RPCProtocol):
-    def __init__(self, source_node, storage, ksize):
+    def __init__(self, source_node, storage, ksize, signer, verifier, public_key, ledger):
         RPCProtocol.__init__(self)
         self.router = RoutingTable(self, ksize, source_node)
         self.storage = storage
         self.source_node = source_node
-
+        self.signer = signer
+        self.verifier = verifier
+        self.pub_key = public_key
+        self.qled = ledger
+        
     def get_refresh_ids(self):
         """
         Get ids to search for to keep old buckets up to date.
@@ -65,21 +69,19 @@ class KademliaProtocol(RPCProtocol):
     def rpc_approveTx(self, sender, nodeid, stx):
         source = Node(nodeid, sender[0], sender[1])
         self.welcome_if_new(source)
-        #tx = pickle.loads(stx)
-        print("I AM HERE --------!!!!!")
         log.debug("got a transaction request from %s, signing transaction", sender)
-        #signed_tx = signTx('sender', self.signer, self.spk, tx)
-        return stx #signed_tx
+        signed_tx = self.qled.signTx(stx, self.source_node.long_id, self.signer, self.pub_key)
+        return pickle.dumps(signed_tx)
 
     def rpc_verifyTx(self, sender, nodeid, tx):
         source = Node(nodeid, sender[0], sender[1])
         self.welcom_if_new(source)
         log.debug("got a verification request from %s for a transaction", sender)
-        verified_tx = verifyTx(tx, self.verifier, self.signer)
+        verified_tx = self.qled.verifyTx(tx, self.verifier, self.signer, self.pub_key)
         if verified_tx == False:
             print("Transaction verification failed")
             return False
-        return verified_tx
+        return pickle.dumps(verified_tx)
 
     def rpc_povBlk(self, sender, nodeid, prvblk, blk):
         source = Node(nodeid, sender[0], sender[1])
@@ -115,16 +117,13 @@ class KademliaProtocol(RPCProtocol):
     
     async def call_approveTx(self, node_to_ask, tx):
         address = (node_to_ask.node.ip, node_to_ask.node.port)
-        print('Going to call %s for tx %s', node_to_ask, tx)
         result = await self.approveTx(address, self.source_node.id, tx)
-        print("Got ", result)
         return self.handle_qtcall_response(result, node_to_ask)
 
     async def call_verifyTx(self, node_to_ask, tx):
         address = (node_to_ask.ip, node_to_ask.port)
-        print('Bin hier')
         result = await self.verifyTx(address, self.source_node.id, tx)
-        return self.handle_call_response(result, node_to_ask)
+        return self.handle_qtcall_response(result, node_to_ask)
 
     async def call_povBlk(self, node_to_ask, blk):
         address = (node_to_ask.ip, node_to_ask.port)
@@ -180,7 +179,6 @@ class KademliaProtocol(RPCProtocol):
         If we get a response, add the node to the routing table.  If
         we get no response, make sure it's removed from the routing table.
         """
-        print('Result : ', result)
         if not result:
             log.warning("no response from %s, removing from router", node)
             self.router.remove_contact(node)
