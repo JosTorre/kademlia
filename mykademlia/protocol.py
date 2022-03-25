@@ -75,8 +75,9 @@ class KademliaProtocol(RPCProtocol):
 
     def rpc_verifyTx(self, sender, nodeid, tx):
         source = Node(nodeid, sender[0], sender[1])
-        self.welcom_if_new(source)
+        #self.welcom_if_new(source)
         log.debug("got a verification request from %s for a transaction", sender)
+        print('Goint to verify transactiooon')
         verified_tx = self.qled.verifyTx(tx, self.verifier, self.signer, self.pub_key)
         if verified_tx == False:
             print("Transaction verification failed")
@@ -117,13 +118,16 @@ class KademliaProtocol(RPCProtocol):
     
     async def call_approveTx(self, node_to_ask, tx):
         address = (node_to_ask.node.ip, node_to_ask.node.port)
+        print('Going to call payer to sign ', address, type(address), ' tx: ', type(tx))
         result = await self.approveTx(address, self.source_node.id, tx)
         return self.handle_qtcall_response(result, node_to_ask)
 
     async def call_verifyTx(self, node_to_ask, tx):
         address = (node_to_ask.ip, node_to_ask.port)
+        print('Calling verifier for transaction', address, type(address), ' tx: ', type(tx))
         result = await self.verifyTx(address, self.source_node.id, tx)
-        return self.handle_qtcall_response(result, node_to_ask)
+        print('Got transaction verified, goint to return it')
+        return self.handle_call_response(result, node_to_ask)
 
     async def call_povBlk(self, node_to_ask, blk):
         address = (node_to_ask.ip, node_to_ask.port)
@@ -183,7 +187,7 @@ class KademliaProtocol(RPCProtocol):
             log.warning("no response from %s, removing from router", node)
             self.router.remove_contact(node)
             return result
-        
+        print('handling verification response') 
         log.info("got successful response from %s", node)
         #self.welcome_if_new(node.node.long_id)
         return result

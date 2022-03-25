@@ -206,7 +206,7 @@ class Server:
         network.
         """
         node = Node(dkey)
-
+        print('Going to store entry', dkey)
         nearest = self.protocol.router.find_neighbors(node)
         if not nearest:
             log.warning("There are no known neighbors to set key %s",
@@ -222,6 +222,7 @@ class Server:
         biggest = max([n.distance_to(node) for n in nodes])
         if self.node.distance_to(node) < biggest:
             self.storage[dkey] = value
+        print('Calling storage on other nodes')
         results = [self.protocol.call_store(n, dkey, value) for n in nodes]
         # return true only if at least one store call succeeded
         return any(await asyncio.gather(*results))
@@ -327,6 +328,7 @@ class Server:
         """
         signed_tx = await self.protocol.call_approveTx(payer,tx)
         doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.signer, self.pub_key)
+        print('Transaction signed twice, sending to verify')
         return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
 
     async def send_verify_Tx(self, signed_tx):
@@ -341,8 +343,10 @@ class Server:
         nodes = await spider.find()
         print('Found Nodes: ', nodes)
         verifier = nodes[random.randint(0,len(nodes)-1)]
-        print('Verifier node: ', verifier)
+        print('Verifier node: ', verifier.ip, type(verifier))
+        #tuple_verifier = tuple((verifier.ip, verifier.port))
         verified_tx = await self.protocol.call_verifyTx(verifier,signed_tx)
+        print('Got Verified Transaction')
         return pickle.loads(verified_tx[1])
 
 

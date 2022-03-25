@@ -92,7 +92,7 @@ class quanTurm():
     #Verifies if the sender and receiver signatures are correct and checks the hash.
     def verifyTx(self, tx, verifk, sigfk, verifpbk):
         tx = pickle.loads(tx)
-        print('Transaction: ', tx)
+        #print('Transaction: ', tx)
         #Get data from transaction
         rsig = tx.get('rsig')
         rvk = tx.get('rvk')
@@ -101,8 +101,8 @@ class quanTurm():
         trx = tx.get('detail')
         txhash = tx.get('hash')
         ndetail = json.dumps(trx).encode('utf-8')
-        print('receiver sig: ', rsig)
-        print('receiver key: ', rvk)
+        #print('receiver sig: ', rsig)
+        #print('receiver key: ', rvk)
         #Verify hash
         if txhash == hashlib.sha3_256(ndetail).hexdigest():
             hasha = True
