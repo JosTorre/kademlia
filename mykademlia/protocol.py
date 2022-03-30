@@ -84,15 +84,15 @@ class KademliaProtocol(RPCProtocol):
             return False
         return pickle.dumps(verified_tx)
 
-    def rpc_povBlk(self, sender, nodeid, prvblk, blk):
+    def rpc_povBlk(self, sender, nodeid, prvblk, nblk):
         source = Node(nodeid, sender[0], sender[1])
-        self.welcom_if_new(source)
+        #self.welcom_if_new(source)
         log.debug("got a PoV request from %s for a block", sender)
-        pov_blk = povBlk(prvblk, blk, self.signer, self.verifier)
+        pov_blk = self.qled.povBlk(prvblk, nblk, self.signer, self.verifier, self.pub_key)
         if pov_blk == False:
             print("Block PoV failed")
             return False
-        return pov_blk
+        return pickle.dumps(pov_blk)
 
     async def call_find_node(self, node_to_ask, node_to_find):
         address = (node_to_ask.ip, node_to_ask.port)
@@ -129,9 +129,11 @@ class KademliaProtocol(RPCProtocol):
         print('Got transaction verified, goint to return it')
         return self.handle_call_response(result, node_to_ask)
 
-    async def call_povBlk(self, node_to_ask, blk):
+    async def call_povBlk(self, node_to_ask, lblk, nblk):
         address = (node_to_ask.ip, node_to_ask.port)
-        result = await self.povBlk(address, self.source_node.id, blk)
+        print('Calling miner to PoV Block')
+        result = await self.povBlk(address, self.source_node.id, lblk, nblk)
+        print('Got new mined Block')
         return self.handle_call_response(result, node_to_ask)
 
     def welcome_if_new(self, node):

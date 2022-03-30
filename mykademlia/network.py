@@ -29,7 +29,7 @@ class Server:
 
     def __init__(self, ksize=20, alpha=3, node_id=None, storage=None):
         """
-        Create a server instance.  This will start listening on the given port.
+        Create a server instance.  Thi-s will start listening on the given port.
 
         Args:
             ksize (int): The k parameter from the paper
@@ -40,7 +40,6 @@ class Server:
         """
         #self.signer = oqs.Signature('Falcon-1024')
         #self.verifier = oqs.Signature('Falcon-1024')
-        self.qled = quanTurm()
         self.ksize = ksize
         self.alpha = alpha
         self.storage = storage or ForgetfulStorage()
@@ -51,8 +50,10 @@ class Server:
         self.save_state_loop = None
         #self.pub_key = self.signer.generate_keypair()
         #self.prv_key = self.signer.export_secret_key()
+    async def startLedger(self, txperblk):
+        self.qled = quanTurm(txperblk)
 
-    def genQKeys(self, algorithm):
+    async def genQKeys(self, algorithm):
         self.signer = oqs.Signature(algorithm)
         self.verifier = oqs.Signature(algorithm)
         self.pub_key = self.signer.generate_keypair()
@@ -161,6 +162,7 @@ class Server:
             :class:`None` if not found, the value otherwise.
         """
         log.info("Looking up key %s", key)
+        print('Looking for: ', key)
         dkey = digest(key)
         # if this node has it, return it
         if self.storage.get(dkey) is not None:
@@ -304,29 +306,20 @@ class Server:
                                                frequency)
 
 
-    async def send_sign_Tx(self, payer, tx):
+    async def Genesis(self):
+        """
+        Creates Genesis block and saves it in the DHT
+        """
+        gen = self.qled.createGenesis()
+        print('Setting Genesis ', gen)
+        return await self.set(gen.get('type'), pickle.dumps(gen))
+
+    async def make_Tx(self, payer, amount):
         """
         Send a Tx to a node for signing, and receive it back.
         """
-        #dnode = digest(payer.node.id)
-        #node = Node(payer.node.id)
-        #print('node to call : ', payer.node)
-        """
-        nearest = self.protocol.router.find_neighbors(node)
-        if not nearest:
-            log.warning("There are no known neighbors to this node %s", payer)
-            return None
-        spider = NodeSpiderCrawl(self.protocol, node, nearest, self.ksize, self.alpha)
-        nodes = await spider.find()
-        print('Found Nodes: ', nodes)
-        for n in nodes:
-            if n == payer:
-                signed_tx = await self.protocol.call_approveTx(payer,tx)
-                print(signed_tx)
-                return signed_tx
-        return print('didnt find sender node')
-        """
-        signed_tx = await self.protocol.call_approveTx(payer,tx)
+        tx = self.qled.makeTx(payer.node.long_id, self.node.long_id, amount)
+        signed_tx = await self.protocol.call_approveTx(payer,pickle.dumps(tx))
         doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.signer, self.pub_key)
         print('Transaction signed twice, sending to verify')
         return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
@@ -347,7 +340,45 @@ class Server:
         #tuple_verifier = tuple((verifier.ip, verifier.port))
         verified_tx = await self.protocol.call_verifyTx(verifier,signed_tx)
         print('Got Verified Transaction')
-        return pickle.loads(verified_tx[1])
+        t_saved = await self.set(pickle.loads(verified_tx[1]).get('type'), verified_tx[1])
+        if not t_saved:
+            return print("Problem at saving tx")
+        if len(self.qled.txs) % self.qled.tpb == 0:
+            return await self.ask_mine_Blk()
+        return False
+
+    async def get_latestBlk(self):
+        print('Getting latest Block')
+        return await self.get('LastBlock')
+
+    async def update_BlkChain(self, last_block, new_block):
+        former_last = self.qled.updateLatestBlk(pickle.loads(last_block))
+        up1 = await self.set(former_last.get('type'), pickle.dumps(former_last))
+        up2 = await self.set('LastBlock', new_block)
+        return up1 & up2
+
+    async def ask_mine_Blk(self):
+        """
+        Request a batch of transactions to be validated by a peer.
+        """
+        last_blk = await self.get_latestBlk()
+        print('Last Block: ', pickle.loads(last_blk))
+        blk_hash = digest(pickle.loads(last_blk).get('hash'))
+        node = Node(blk_hash)
+        nearest = self.protocol.router.find_neighbors(node)
+        if not nearest:
+            log.warning("There are no known neighbours to this node %s", payer)
+            return None
+        spider = NodeSpiderCrawl(self.protocol, node, nearest, self.ksize, self.alpha)
+        nodes = await spider.find()
+        print('Found Nodes: ', nodes)
+        miner = nodes[random.randint(0,len(nodes)-1)]
+        print('Miner node: ', miner.ip, type(miner))
+        nblk = self.qled.mineBlock(pickle.loads(last_blk))
+        mined_blk = await self.protocol.call_povBlk(miner,last_blk, nblk)
+        print('Mined Block and last block ', pickle.loads(mined_blk[1]))
+        b_saved = await self.update_BlkChain(last_blk, mined_blk[1])
+        return b_saved
 
 
 def check_dht_value_type(value):

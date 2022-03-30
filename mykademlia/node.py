@@ -2,7 +2,7 @@ from operator import itemgetter
 import heapq
 import socket
 import oqs
-from mykademlia.blockchain import quanTurm
+
 class Node:
     """
     Simple object to encapsulate the concept of a Node (minimally an ID, but
