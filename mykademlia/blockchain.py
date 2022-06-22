@@ -77,6 +77,7 @@ class quanTurm():
     
     #Adds the signature of the sender or receiver to the transaction.
     def signTx(self, tx, signerid, signerobj, signer_pubk):
+        print('Approving: ', tx)
         tx = pickle.loads(tx)
         trx = tx.get('detail')
         signature = signerobj.sign(pickle.dumps(trx))
@@ -88,6 +89,7 @@ class quanTurm():
             tx['rsig'] = signature
         else:
             return print("Neither signer or receiver id, given: ", signerid," expecter=d: ", trx.get('sender'))
+        print('Approved: ', tx)
         return tx
 
     #Verifies if the sender and receiver signatures are correct and checks the hash.

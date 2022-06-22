@@ -5,6 +5,7 @@ import random
 import time
 import json
 import oqs
+import sys
 from pprint import pprint
 
 from mykademlia.network import Server
@@ -39,44 +40,21 @@ async def runLedger(nnodes, txperblk, nblks):
     await node[1].Genesis()
     #Make transactions and mine blocks
     mined_blocks = 0
+    transacted = 0
     while mined_blocks < nblks:
         rn = random.sample(range(0,nnodes-1),2)
         receiver = rn[0]
         payer = rn[1]
         print('payer: ', payer, ' receiver: ', receiver)
         mined = await node[receiver].make_Tx(node[payer], str(random.randint(0,100)))
+        transacted += 1
         if mined:
             mined_blocks += 1
+    print("Transactions Made: ", transacted, " Mined Blocks: ", mined_blocks)
 
-"""
-    for b in range(nblks):
-        for n in range(ntxs):
-            rn = random.sample(range(0,nnodes-1),2)
-            receiver = rn[0]
-            payer = rn[1]
-            print('payer: ', payer, ' receiver: ', receiver )
-            #tx = qLed.makeTx(node[sender].node.long_id, node[receiver].node.long_id, str(random.randint(0,100)))
-            #print('Transaction ', n,' : ', json.dumps(tx, sort_keys=False, indent=4))
-            #await node[receiver].bootstrap([(node[sender].node.ip, node[sender].node.port)])
-            print('Going to send transaction to payer node', node[payer].node.ip, node[payer].node.port)
-            signed_tx = await node[receiver].make_Tx(node[payer], str(random.randint(0,100)))
-            #print('Transaction received signed: ', signed_tx)
-            print('going to insert!!!')
-            print('SSS', len(pickle.dumps(signed_tx)))
-            await node[receiver].set(tx.get('type'),pickle.dumps(signed_tx))
-        #Get former Block
-        if b == 0:
-            lblk = await node[receiver].get('Genesis')
-            lblk = pickle.loads(lblk)
-        else:
-            lblk = await node[receiver].get('LastBlock')
-            lblk = pickle.loads(lblk)
-        #print('Retrieved last Block: ', json.dumps(lblk, sort_keys=False, indent=4))
-        blk1 = qLed.mineBlock(lblk)
-        #MISSING Modify former block and save in DHT
-        await node[receiver].set(blk1.get('type'),pickle.dumps(blk1))
-        #print('Block: ', b,' : ', json.dumps(blk1, sort_keys=False, indent=4))
-"""
+async def storageStats(nnodes):
+    for i in range(nnodes):
+        print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
 
 async def main():
 
@@ -91,7 +69,8 @@ async def main():
     #Start running the nodes
     await startNodes(nnodes, sig_algorithm, ntxs)
     #Start and run the Blockchain
-    await runLedger(nnodes, ntxs, nblks) 
+    await runLedger(nnodes, ntxs, nblks)
+    await storageStats(nnodes)
 
 start_time = time.time()
 asyncio.run(main())

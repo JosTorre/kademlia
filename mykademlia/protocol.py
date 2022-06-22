@@ -70,6 +70,7 @@ class KademliaProtocol(RPCProtocol):
         source = Node(nodeid, sender[0], sender[1])
         self.welcome_if_new(source)
         log.debug("got a transaction request from %s, signing transaction", sender)
+        print('Got to approve: ', pickle.loads(stx))
         signed_tx = self.qled.signTx(stx, self.source_node.long_id, self.signer, self.pub_key)
         return pickle.dumps(signed_tx)
 
