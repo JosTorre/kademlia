@@ -5,7 +5,7 @@ import random
 import pickle
 import asyncio
 import logging
-import oqs
+from ecdsa import SigningKey
 
 from mykademlia.protocol import KademliaProtocol
 from mykademlia.utils import digest
@@ -51,15 +51,14 @@ class Server:
         #self.pub_key = self.signer.generate_keypair()
         #self.prv_key = self.signer.export_secret_key()
     async def startLedger(self, txperblk):
-        self.qled = quanTurm(txperblk)
+        self.qled = classicTurm(txperblk)
 
     async def genQKeys(self, algorithm):
-        self.signer = oqs.Signature(algorithm)
-        self.verifier = oqs.Signature(algorithm)
-        self.pub_key = self.signer.generate_keypair()
-        self.prv_key = self.signer.export_secret_key()
+        algorithm = 'ecdsa.NIST192p'
+        self.prv_key = SigningKey.generate(curve=algorithm)
+        self.pub_key = self.prv_key.verifying_key
         print('Signature Keys for node ', self.node.long_id, ' generated')
-        print('PQ Signature ', self.pub_key)
+        print('ECDSA Signature ', self.pub_key)
 
     def stop(self):
         if self.transport is not None:

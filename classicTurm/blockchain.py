@@ -5,11 +5,11 @@ import base64
 import json
 import pickle
 #from ecdsa import SigningKey
-import oqs
+from ecdsa import SigningKey
 
 # inspired by https://github.com/janfilips/blockchain
 
-class quanTurm():
+class classicTurm():
     
     #This method initializes the parameters used per node to create the Blockchain.
     def __init__(self, tpb):
@@ -28,7 +28,7 @@ class quanTurm():
                 'id':0,
                 'timestamp':time.time(),
                 'prev_hash':0,
-                'hash':hashlib.sha3_256(b'Creator:JoseTorre').hexdigest(),
+                'hash':hashlib.sha256(b'Creator:JoseTorre').hexdigest(),
             }
         return gen
     
@@ -41,7 +41,7 @@ class quanTurm():
                 'time':time.time(),
                 'prev_hash':prev_blk.get('hash'),
                 'txs':self.txs,
-                'hash':hashlib.sha3_256(ltxs).hexdigest(),
+                'hash':hashlib.sha256(ltxs).hexdigest(),
                 'povs':'',
                 'povk':'',
             }
@@ -65,7 +65,7 @@ class quanTurm():
         tx = {
                 'type':'Tx' + '_' + str(receiver) + '_' + str(self.tx_counter),
                 'detail':detail,
-                'hash':hashlib.sha3_256(ndetail).hexdigest(),
+                'hash':hashlib.sha256(ndetail).hexdigest(),
                 'svk':'',
                 'rvk':'',
                 'ssig':'',
@@ -107,7 +107,7 @@ class quanTurm():
         #print('receiver sig: ', rsig)
         #print('receiver key: ', rvk)
         #Verify hash
-        if txhash == hashlib.sha3_256(ndetail).hexdigest():
+        if txhash == hashlib.sha256(ndetail).hexdigest():
             hasha = True
         else:
             hasha = False
@@ -137,12 +137,12 @@ class quanTurm():
         lpovk = lastblk.get('povk')
         #Check if genesis
         if lastblk['id'] == 0:
-            verif = hashlib.sha3_256(b'Creator:JoseTorre').hexdigest() == lhash
+            verif = hashlib.sha256(b'Creator:JoseTorre').hexdigest() == lhash
             print('Verified Genesis: ', verif, lhash)
         else:
             lblkverif = povverif.verify(pickle.dumps(ltxs), lpovs, lpovk)
             hashverif = lhash == nprevhash
-            nhashverif = nhash == hashlib.sha3_256(pickle.dumps(ntxs)).hexdigest()
+            nhashverif = nhash == hashlib.sha256(pickle.dumps(ntxs)).hexdigest()
             verif = lblkverif & hashverif & nhashverif 
         if verif:
             newblk['povs'] = povsig.sign(pickle.dumps(ntxs))
