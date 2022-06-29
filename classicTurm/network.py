@@ -7,13 +7,13 @@ import asyncio
 import logging
 from ecdsa import SigningKey, NIST192p
 
-from mykademlia.protocol import KademliaProtocol
-from mykademlia.utils import digest
-from mykademlia.storage import ForgetfulStorage
-from mykademlia.node import Node
-from mykademlia.crawling import ValueSpiderCrawl
-from mykademlia.crawling import NodeSpiderCrawl
-from mykademlia.blockchain import quanTurm
+from classicTurm.protocol import KademliaProtocol
+from classicTurm.utils import digest
+from classicTurm.storage import ForgetfulStorage
+from classicTurm.node import Node
+from classicTurm.crawling import ValueSpiderCrawl
+from classicTurm.crawling import NodeSpiderCrawl
+from classicTurm.blockchain import quanTurm
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

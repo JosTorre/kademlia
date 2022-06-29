@@ -5,9 +5,9 @@ import pickle
 
 from rpcudp.protocol import RPCProtocol
 
-from mykademlia.node import Node
-from mykademlia.routing import RoutingTable
-from mykademlia.utils import digest
+from classicTurm.node import Node
+from classicTurm.routing import RoutingTable
+from classicTurm.utils import digest
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
