@@ -72,6 +72,9 @@ async def main():
     await runLedger(nnodes, ntxs, nblks)
     await storageStats(nnodes)
 
+f = open('mykademlia/init.txt', 'r')
+file_contents = f.read()
+print(file_contents)
 start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
