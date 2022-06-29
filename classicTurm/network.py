@@ -53,7 +53,7 @@ class Server:
     async def startLedger(self, txperblk):
         self.qled = classicTurm(txperblk)
 
-    async def genQKeys(self, algorithm):
+    async def genECKeys(self, algorithm):
         algorithm = 'ecdsa.NIST192p'
         self.prv_key = SigningKey.generate(curve=algorithm)
         self.pub_key = self.prv_key.verifying_key

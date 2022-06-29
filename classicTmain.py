@@ -19,7 +19,7 @@ async def startNodes(nnodes, algorithm, txperblk):
         node.append(Server())
         print("Created node: ", node[i].node.long_id)
         port = 1000 + i
-        await node[i].genQKeys(algorithm)
+        await node[i].genECKeys(algorithm)
         await node[i].startLedger(txperblk)
         await node[i].listen(port)
     await bootstrapNodes(node)
@@ -59,10 +59,10 @@ async def storageStats(nnodes):
 async def main():
 
     #Introduce Sig Mechanisms
-    sigs = oqs.get_enabled_sig_mechanisms()
-    pprint(sigs, compact='True')
+    print("Available Elliptic Curve Signature Algorithms:")
+    print("NIST192p, NIST192p, BRAINPOOLP192r1, SECP112r1")
     #Get the parameters
-    sig_algorithm = input("Post-quantum Signature Algorithm: ")
+    sig_algorithm = input("Elliptic Curve Signature Algorithm: ")
     nnodes = int(input("Number of Nodes: "))
     ntxs = int(input("Number of Transactions per Block: "))
     nblks = int(input("Number of Blocks: "))

@@ -76,11 +76,11 @@ class classicTurm():
         return tx
     
     #Adds the signature of the sender or receiver to the transaction.
-    def signTx(self, tx, signerid, signerobj, signer_pubk):
+    def signTx(self, tx, signerid, prv_key, signer_pubk):
         print('Approving: ', tx)
         tx = pickle.loads(tx)
         trx = tx.get('detail')
-        signature = signerobj.sign(pickle.dumps(trx))
+        signature = prv_key.sign(pickle.dumps(trx))
         if signerid == trx.get('sender'):
             tx['svk'] = signer_pubk
             tx['ssig'] = signature
@@ -112,8 +112,8 @@ class classicTurm():
         else:
             hasha = False
         #Verify signatures
-        v1 = verifk.verify(pickle.dumps(trx), rsig, rvk)
-        v2 = verifk.verify(pickle.dumps(trx), ssig, svk)
+        v1 = verifk.verify(rsig, pickle.dumps(trx))
+        v2 = verifk.verify(ssig, pickle.dumps(trx))
         #If correct, pov
         if v1 & v2 & hasha: 
             # Add verifyer signature
@@ -140,7 +140,7 @@ class classicTurm():
             verif = hashlib.sha256(b'Creator:JoseTorre').hexdigest() == lhash
             print('Verified Genesis: ', verif, lhash)
         else:
-            lblkverif = povverif.verify(pickle.dumps(ltxs), lpovs, lpovk)
+            lblkverif = povverif.verify(lpovs, pickle.dumps(ltxs))
             hashverif = lhash == nprevhash
             nhashverif = nhash == hashlib.sha256(pickle.dumps(ntxs)).hexdigest()
             verif = lblkverif & hashverif & nhashverif 
