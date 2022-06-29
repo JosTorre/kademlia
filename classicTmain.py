@@ -8,7 +8,7 @@ import oqs
 import sys
 from pprint import pprint
 
-from mykademlia.network import Server
+from classicTurm.network import Server
 from classicTurm.blockchain import classicTurm
 
 
@@ -60,9 +60,9 @@ async def main():
 
     #Introduce Sig Mechanisms
     print("Available Elliptic Curve Signature Algorithms:")
-    print("NIST192p, NIST192p, BRAINPOOLP192r1, SECP112r1")
+    print("NIST192p, BRAINPOOLP192r1, SECP112r1")
     #Get the parameters
-    sig_algorithm = input("Elliptic Curve Signature Algorithm: ")
+    sig_algorithm = 'NIST192p'  #input("Elliptic Curve Signature Algorithm: ")
     nnodes = int(input("Number of Nodes: "))
     ntxs = int(input("Number of Transactions per Block: "))
     nblks = int(input("Number of Blocks: "))

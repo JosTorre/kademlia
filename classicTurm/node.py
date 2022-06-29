@@ -28,7 +28,7 @@ class Node:
 
 #New Addition
     def genECKeys(self, algorithm):
-        self.prv_key = SigningKey.generate(curve=algorithm)
+        self.prv_key = SigningKey.generate(curve=NIST192p)
         self.pub_key = self.prv_key.verifying_key
         print('Signature Keys for node ', self.long_id, ' generated')
         print('ECDSA Signature ', self.pub_key)

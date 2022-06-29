@@ -5,7 +5,7 @@ import random
 import pickle
 import asyncio
 import logging
-from ecdsa import SigningKey
+from ecdsa import SigningKey, NIST192p
 
 from mykademlia.protocol import KademliaProtocol
 from mykademlia.utils import digest
@@ -55,7 +55,7 @@ class Server:
 
     async def genECKeys(self, algorithm):
         #algorithm = 'ecdsa.NIST192p'
-        self.prv_key = SigningKey.generate(curve=algorithm)
+        self.prv_key = SigningKey.generate(curve=NIST192p)
         self.pub_key = self.prv_key.verifying_key
         print('Signature Keys for node ', self.node.long_id, ' generated')
         print('ECDSA Signature ', self.pub_key)
