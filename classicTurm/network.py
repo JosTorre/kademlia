@@ -13,7 +13,7 @@ from classicTurm.storage import ForgetfulStorage
 from classicTurm.node import Node
 from classicTurm.crawling import ValueSpiderCrawl
 from classicTurm.crawling import NodeSpiderCrawl
-from classicTurm.blockchain import quanTurm
+from classicTurm.blockchain import classicTurm
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -71,7 +71,7 @@ class Server:
             self.save_state_loop.cancel()
 
     def _create_protocol(self):
-        return self.protocol_class(self.node, self.storage, self.ksize, self.pub_key, self.qled)
+        return self.protocol_class(self.node, self.storage, self.ksize, self.pub_key, self.prv_key, self.qled)
 
     async def listen(self, port, interface='127.0.0.1'):
         """
@@ -319,7 +319,7 @@ class Server:
         """
         tx = self.qled.makeTx(payer.node.long_id, self.node.long_id, amount)
         signed_tx = await self.protocol.call_approveTx(payer,pickle.dumps(tx))
-        doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.signer, self.pub_key)
+        doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.prv_key, self.pub_key)
         print('Transaction signed twice, sending to verify')
         return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
 

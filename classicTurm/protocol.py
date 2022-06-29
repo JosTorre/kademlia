@@ -13,12 +13,13 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class KademliaProtocol(RPCProtocol):
-    def __init__(self, source_node, storage, ksize, public_key, ledger):
+    def __init__(self, source_node, storage, ksize, public_key, prv_key, ledger):
         RPCProtocol.__init__(self)
         self.router = RoutingTable(self, ksize, source_node)
         self.storage = storage
         self.source_node = source_node
         self.pub_key = public_key
+        self.prv_key = prv_key
         self.qled = ledger
         
     def get_refresh_ids(self):
@@ -69,7 +70,7 @@ class KademliaProtocol(RPCProtocol):
         self.welcome_if_new(source)
         log.debug("got a transaction request from %s, signing transaction", sender)
         print('Got to approve: ', pickle.loads(stx))
-        signed_tx = self.qled.signTx(stx, self.source_node.long_id, self.signer, self.pub_key)
+        signed_tx = self.qled.signTx(stx, self.source_node.long_id, self.prv_key, self.pub_key)
         return pickle.dumps(signed_tx)
 
     def rpc_verifyTx(self, sender, nodeid, tx):
