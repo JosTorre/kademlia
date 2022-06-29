@@ -13,13 +13,11 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class KademliaProtocol(RPCProtocol):
-    def __init__(self, source_node, storage, ksize, signer, verifier, public_key, ledger):
+    def __init__(self, source_node, storage, ksize, public_key, ledger):
         RPCProtocol.__init__(self)
         self.router = RoutingTable(self, ksize, source_node)
         self.storage = storage
         self.source_node = source_node
-        self.signer = signer
-        self.verifier = verifier
         self.pub_key = public_key
         self.qled = ledger
         
@@ -79,7 +77,7 @@ class KademliaProtocol(RPCProtocol):
         #self.welcom_if_new(source)
         log.debug("got a verification request from %s for a transaction", sender)
         print('Goint to verify transactiooon')
-        verified_tx = self.qled.verifyTx(tx, self.verifier, self.signer, self.pub_key)
+        verified_tx = self.qled.verifyTx(tx, self.prv_key, self.pub_key)
         if verified_tx == False:
             print("Transaction verification failed")
             return False
@@ -89,7 +87,7 @@ class KademliaProtocol(RPCProtocol):
         source = Node(nodeid, sender[0], sender[1])
         #self.welcom_if_new(source)
         log.debug("got a PoV request from %s for a block", sender)
-        pov_blk = self.qled.povBlk(prvblk, nblk, self.signer, self.verifier, self.pub_key)
+        pov_blk = self.qled.povBlk(prvblk, nblk, self.prv_key, self.pub_key)
         if pov_blk == False:
             print("Block PoV failed")
             return False

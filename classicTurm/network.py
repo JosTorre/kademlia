@@ -54,7 +54,7 @@ class Server:
         self.qled = classicTurm(txperblk)
 
     async def genECKeys(self, algorithm):
-        algorithm = 'ecdsa.NIST192p'
+        #algorithm = 'ecdsa.NIST192p'
         self.prv_key = SigningKey.generate(curve=algorithm)
         self.pub_key = self.prv_key.verifying_key
         print('Signature Keys for node ', self.node.long_id, ' generated')
@@ -71,7 +71,7 @@ class Server:
             self.save_state_loop.cancel()
 
     def _create_protocol(self):
-        return self.protocol_class(self.node, self.storage, self.ksize, self.signer, self.verifier, self.pub_key, self.qled)
+        return self.protocol_class(self.node, self.storage, self.ksize, self.pub_key, self.qled)
 
     async def listen(self, port, interface='127.0.0.1'):
         """

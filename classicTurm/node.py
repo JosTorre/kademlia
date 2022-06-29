@@ -1,7 +1,7 @@
 from operator import itemgetter
 import heapq
 import socket
-import oqs
+from ecdsa import SigningKey
 
 class Node:
     """
@@ -27,13 +27,11 @@ class Node:
         #self.qled = quanTurm()
 
 #New Addition
-    def genQKeys(self, algorithm):
-        self.signer = oqs.Signature(algorithm)
-        self.verifier = oqs.Signature(algorithm)
-        self.pub_key = self.signer.generate_keypair()
-        self.prv_key = self.signer.export_secret_key()
+    def genECKeys(self, algorithm):
+        self.prv_key = SigningKey.generate(curve=algorithm)
+        self.pub_key = self.prv_key.verifying_key
         print('Signature Keys for node ', self.long_id, ' generated')
-        print('PQ Signature ', self.pub_key)
+        print('ECDSA Signature ', self.pub_key)
 # New addition
     def startCommunication(self, port):
         self.sock.bind(('127.0.0.1', int(port)))

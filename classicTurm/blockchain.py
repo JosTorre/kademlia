@@ -93,7 +93,7 @@ class classicTurm():
         return tx
 
     #Verifies if the sender and receiver signatures are correct and checks the hash.
-    def verifyTx(self, tx, verifk, sigfk, verifpbk):
+    def verifyTx(self, tx, sigfk, verifk):
         tx = pickle.loads(tx)
         #print('Transaction: ', tx)
         #Get data from transaction
@@ -118,13 +118,13 @@ class classicTurm():
         if v1 & v2 & hasha: 
             # Add verifyer signature
             tx['povs'] = sigfk.sign(pickle.dumps(tx))
-            tx['povk'] = verifpbk
+            tx['povk'] = verifk
             return tx
         else:
             return False
 
     #Verifies a block taking the last and new block, checking signatures and hashes; returnes signed new block.
-    def povBlk(self, lastblk, newblk, povsig, povverif, verifpbk):
+    def povBlk(self, lastblk, newblk, povsig, povverif):
         lastblk = pickle.loads(lastblk)
         newblk = pickle.loads(newblk)
         #Get data from both blocks
@@ -140,13 +140,13 @@ class classicTurm():
             verif = hashlib.sha256(b'Creator:JoseTorre').hexdigest() == lhash
             print('Verified Genesis: ', verif, lhash)
         else:
-            lblkverif = povverif.verify(lpovs, pickle.dumps(ltxs))
+            lblkverif = lpovk.verify(lpovs, pickle.dumps(ltxs))
             hashverif = lhash == nprevhash
             nhashverif = nhash == hashlib.sha256(pickle.dumps(ntxs)).hexdigest()
             verif = lblkverif & hashverif & nhashverif 
         if verif:
             newblk['povs'] = povsig.sign(pickle.dumps(ntxs))
-            newblk['povk'] = verifpbk
+            newblk['povk'] = povverif
             return newblk
         else:
             return False
