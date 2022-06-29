@@ -1,4 +1,10 @@
-# Python Distributed Hash Table
+# Python Distributed Ledger over a Distributed Hash Table P2P Network
+
+## QuanTurm
+
+info loading.
+
+## Kademlia:
 [![Build Status](https://github.com/bmuller/kademlia/actions/workflows/ci.yml/badge.svg)](https://github.com/bmuller/kademlia/actions/workflows/ci.yml)
 [![Docs Status](https://readthedocs.org/projects/kademlia/badge/?version=latest)](http://kademlia.readthedocs.org)
 
@@ -8,13 +14,13 @@ This library is an asynchronous Python implementation of the [Kademlia distribut
 
 This library aims to be as close to a reference implementation of the [Kademlia paper](http://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf) as possible.
 
-## Installation
+### Installation
 
 ```
 pip install kademlia
 ```
 
-## Usage
+### Usage
 *This assumes you have a working familiarity with [asyncio](https://docs.python.org/3/library/asyncio.html).*
 
 Assuming you want to connect to an existing network:
@@ -43,12 +49,12 @@ async def run():
 asyncio.run(run())
 ```
 
-## Initializing a Network
+### Initializing a Network
 If you're starting a new network from scratch, just omit the `node.bootstrap` call in the example above.  Then, bootstrap other nodes by connecting to the first node you started.
 
 See the examples folder for a first node example that other nodes can bootstrap connect to and some code that gets and sets a key/value.
 
-## Logging
+### Logging
 This library uses the standard [Python logging library](https://docs.python.org/3/library/logging.html).  To see debut output printed to STDOUT, for instance, use:
 
 ```python
@@ -59,7 +65,7 @@ log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
 ```
 
-## Running Tests
+### Running Tests
 To run tests:
 
 ```
@@ -67,8 +73,8 @@ pip install -r dev-requirements.txt
 pytest
 ```
 
-## Reporting Issues
+### Reporting Issues
 Please report all issues [on github](https://github.com/bmuller/kademlia/issues).
 
-## Fidelity to Original Paper
+### Fidelity to Original Paper
 The current implementation should be an accurate implementation of all aspects of the paper save one - in Section 2.3 there is the requirement that the original publisher of a key/value republish it every 24 hours.  This library does not do this (though you can easily do this manually).
