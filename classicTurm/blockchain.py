@@ -82,10 +82,10 @@ class classicTurm():
         trx = tx.get('detail')
         signature = prv_key.sign(pickle.dumps(trx))
         if signerid == trx.get('sender'):
-            tx['svk'] = signer_pubk
+            tx['svk'] = signer_pubk.to_string()
             tx['ssig'] = signature
         elif signerid == trx.get('receiver'):
-            tx['rvk'] = signer_pubk
+            tx['rvk'] = signer_pubk.to_string()
             tx['rsig'] = signature
         else:
             return print("Neither signer or receiver id, given: ", signerid," expecter=d: ", trx.get('sender'))
@@ -118,7 +118,7 @@ class classicTurm():
         if v1 & v2 & hasha: 
             # Add verifyer signature
             tx['povs'] = sigfk.sign(pickle.dumps(tx))
-            tx['povk'] = verifk
+            tx['povk'] = verifk.to_string()
             return tx
         else:
             return False
@@ -146,7 +146,7 @@ class classicTurm():
             verif = lblkverif & hashverif & nhashverif 
         if verif:
             newblk['povs'] = povsig.sign(pickle.dumps(ntxs))
-            newblk['povk'] = povverif
+            newblk['povk'] = povverif.to_string()
             return newblk
         else:
             return False
