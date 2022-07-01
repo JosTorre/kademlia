@@ -103,8 +103,10 @@ class classicTurm():
         #Get data from transaction
         rsig = tx.get('rsig')
         rvk = tx.get('rvk')
+        rvk = VerifyingKey.from_string(rvk, curve=NIST192p)
         ssig = tx.get('ssig')
         svk = tx.get('svk')
+        svk = VerifyingKey.from_string(svk, curve=NIST192p)
         trx = tx.get('detail')
         txhash = tx.get('hash')
         ndetail = pickle.dumps(trx)
@@ -116,8 +118,8 @@ class classicTurm():
         else:
             hasha = False
         #Verify signatures
-        v1 = verifk.verify(rsig, pickle.dumps(txhash))
-        v2 = verifk.verify(ssig, pickle.dumps(txhash))
+        v1 = rvk.verify(rsig, pickle.dumps(txhash))
+        v2 = svk.verify(ssig, pickle.dumps(txhash))
         #If correct, pov
         if v1 & v2 & hasha: 
             # Add verifyer signature
