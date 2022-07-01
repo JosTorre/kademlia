@@ -321,6 +321,8 @@ class Server:
         signed_tx = await self.protocol.call_approveTx(payer,pickle.dumps(tx))
         doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.prv_key, self.pub_key)
         print('Transaction signed twice, sending to verify')
+        print('First part: ', doublesigned_tx[0])
+        print('Second part: ', doublesigned_tx[1])
         return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
 
     async def send_verify_Tx(self, signed_tx):
