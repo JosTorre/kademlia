@@ -125,7 +125,7 @@ class KademliaProtocol(RPCProtocol):
     async def call_verifyTx(self, node_to_ask, tx):
         address = (node_to_ask.ip, node_to_ask.port)
         print('Calling verifier for transaction', address, type(address), ' tx: ', type(tx))
-        print('Tx loaded: ', tx)
+        print('Tx dumped: ', tx, 'Tx loaded: ', pickle.loads(tx))
         result = await self.verifyTx(address, self.source_node.id, tx)
         print('Got transaction verified, goint to return it')
         return self.handle_call_response(result, node_to_ask)
