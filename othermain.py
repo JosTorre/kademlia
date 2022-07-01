@@ -72,11 +72,11 @@ async def main():
     await runLedger(nnodes, ntxs, nblks)
     await storageStats(nnodes)
 
-f = open('mykademlia/init.txt', 'r')
-file_contents = f.read()
-print(file_contents)
 start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
 #asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-print("Finished in --- %s seconds --- " % (time.time() - start_time))
+print("Finished in --- %s seconds --- " % ((time.time() - start_time)/10))
+with  open('mykademlia/init.txt', 'r') as f:
+    for line in f:
+        print(line)
