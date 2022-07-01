@@ -39,6 +39,8 @@ async def runLedger(nnodes, txperblk, nblks):
     #Create and add Genesis Block
     await node[1].Genesis()
     #Make transactions and mine blocks
+    global mined_blocks
+    global transacted
     mined_blocks = 0
     transacted = 0
     while mined_blocks < nblks:
@@ -50,11 +52,13 @@ async def runLedger(nnodes, txperblk, nblks):
         transacted += 1
         if mined:
             mined_blocks += 1
+    print('\n')
     print("Transactions Made: ", transacted, " Mined Blocks: ", mined_blocks)
 
 async def storageStats(nnodes):
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
+    print('\n')
 
 async def main():
 
@@ -76,7 +80,11 @@ start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
 #asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-print("Finished in --- %s seconds --- " % ((time.time() - start_time)/10))
+ttime = ((time.time() - start_time)/10)
+print("FINISHED in --- %s seconds --- " % ttime)
+print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
+print("Block frequency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
+
 with  open('mykademlia/init.txt', 'r') as f:
     for line in f:
         print(line)
