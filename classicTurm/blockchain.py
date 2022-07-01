@@ -79,6 +79,7 @@ class classicTurm():
     def signTx(self, tx, signerid, prv_key, signer_pubk):
         print('Approving: ', tx)
         tx = pickle.loads(tx)
+        print('Approving2: ', tx)
         trx = tx.get('detail')
         signature = prv_key.sign(pickle.dumps(trx))
         if signerid == trx.get('sender'):
