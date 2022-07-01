@@ -77,7 +77,7 @@ class classicTurm():
     
     #Adds the signature of the sender or receiver to the transaction.
     def signTx(self, tx, signerid, prv_key, signer_pubk):
-        print('Approving: ', tx)
+        print('Approving: ', tx, ' Depickled: ', pickle.loads(tx))
         tx = pickle.loads(tx)
         print('Approving2: ', tx)
         trx = tx.get('detail')
