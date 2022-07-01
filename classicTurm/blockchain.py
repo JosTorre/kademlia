@@ -5,7 +5,7 @@ import base64
 import json
 import pickle
 #from ecdsa import SigningKey
-from ecdsa import SigningKey, VerifyingKey
+from ecdsa import SigningKey, VerifyingKey, NIST192p
 
 # inspired by https://github.com/janfilips/blockchain
 
