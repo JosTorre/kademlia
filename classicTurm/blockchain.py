@@ -96,6 +96,8 @@ class classicTurm():
     #Verifies if the sender and receiver signatures are correct and checks the hash.
     def verifyTx(self, tx, sigfk, verifk):
         tx = pickle.loads(tx)
+        print("Transaction to Verify: ", tx)
+        print("Verifier keys: ", sigfk, verifk)
         #print('Transaction: ', tx)
         #Get data from transaction
         rsig = tx.get('rsig')
@@ -113,7 +115,7 @@ class classicTurm():
         else:
             hasha = False
         #Verify signatures
-        v1 = rvk.verify(rsig, pickle.dumps(trx))
+        v1 = verifk.verify(rsig, pickle.dumps(trx))
         v2 = verifk.verify(ssig, pickle.dumps(trx))
         #If correct, pov
         if v1 & v2 & hasha: 
