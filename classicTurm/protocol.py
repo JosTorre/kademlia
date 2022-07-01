@@ -190,7 +190,7 @@ class KademliaProtocol(RPCProtocol):
             self.router.remove_contact(node)
             return result
         print('handling verification response')
-        print('Got response: ', pickle.loads(result))
+        print('Got response: ', pickle.loads(result[1]))
         log.info("got successful response from %s", node)
         #self.welcome_if_new(node.node.long_id)
         return result
