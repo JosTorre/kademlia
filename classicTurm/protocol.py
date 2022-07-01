@@ -191,6 +191,7 @@ class KademliaProtocol(RPCProtocol):
             return result
         print('handling verification response')
         print('Got response: ', pickle.loads(result[1]))
+        result = pickle.loads(result)
         log.info("got successful response from %s", node)
         #self.welcome_if_new(node.node.long_id)
         return result
