@@ -112,7 +112,7 @@ class classicTurm():
         else:
             hasha = False
         #Verify signatures
-        v1 = verifk.verify(rsig, pickle.dumps(trx))
+        v1 = rvk.verify(rsig, pickle.dumps(trx))
         v2 = verifk.verify(ssig, pickle.dumps(trx))
         #If correct, pov
         if v1 & v2 & hasha: 
