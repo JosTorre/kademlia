@@ -81,7 +81,8 @@ class classicTurm():
         tx = pickle.loads(tx)
         print('Approving2: ', tx)
         trx = tx.get('detail')
-        signature = prv_key.sign(pickle.dumps(trx))
+        txhash = tx.get('hash')
+        signature = prv_key.sign(pickle.dumps(txhash))
         if signerid == trx.get('sender'):
             tx['svk'] = signer_pubk
             tx['ssig'] = signature
@@ -115,12 +116,12 @@ class classicTurm():
         else:
             hasha = False
         #Verify signatures
-        v1 = verifk.verify(rsig, pickle.dumps(trx))
-        v2 = verifk.verify(ssig, pickle.dumps(trx))
+        v1 = verifk.verify(rsig, pickle.dumps(txhash))
+        v2 = verifk.verify(ssig, pickle.dumps(txhash))
         #If correct, pov
         if v1 & v2 & hasha: 
             # Add verifyer signature
-            tx['povs'] = sigfk.sign(pickle.dumps(tx))
+            tx['povs'] = sigfk.sign(pickle.dumps(txhash))
             tx['povk'] = verifk
             return tx
         else:
@@ -143,12 +144,12 @@ class classicTurm():
             verif = hashlib.sha256(b'Creator:JoseTorre').hexdigest() == lhash
             print('Verified Genesis: ', verif, lhash)
         else:
-            lblkverif = lpovk.verify(lpovs, pickle.dumps(ltxs))
+            lblkverif = lpovk.verify(lpovs, pickle.dumps(lhash))
             hashverif = lhash == nprevhash
             nhashverif = nhash == hashlib.sha256(pickle.dumps(ntxs)).hexdigest()
             verif = lblkverif & hashverif & nhashverif 
         if verif:
-            newblk['povs'] = povsig.sign(pickle.dumps(ntxs))
+            newblk['povs'] = povsig.sign(pickle.dumps(nhash))
             newblk['povk'] = povverif
             return newblk
         else:
