@@ -5,7 +5,7 @@ import base64
 import json
 import pickle
 #from ecdsa import SigningKey
-from ecdsa import SigningKey
+from ecdsa import SigningKey, VerifyingKey
 
 # inspired by https://github.com/janfilips/blockchain
 
@@ -84,10 +84,10 @@ class classicTurm():
         txhash = tx.get('hash')
         signature = prv_key.sign(pickle.dumps(txhash))
         if signerid == trx.get('sender'):
-            tx['svk'] = signer_pubk
+            tx['svk'] = signer_pubk.to_string()
             tx['ssig'] = signature
         elif signerid == trx.get('receiver'):
-            tx['rvk'] = signer_pubk
+            tx['rvk'] = signer_pubk.to_string()
             tx['rsig'] = signature
         else:
             return print("Neither signer or receiver id, given: ", signerid," expecter=d: ", trx.get('sender'))
@@ -122,7 +122,7 @@ class classicTurm():
         if v1 & v2 & hasha: 
             # Add verifyer signature
             tx['povs'] = sigfk.sign(pickle.dumps(txhash))
-            tx['povk'] = verifk
+            tx['povk'] = verifk.to_string()
             return tx
         else:
             return False
@@ -144,13 +144,14 @@ class classicTurm():
             verif = hashlib.sha256(b'Creator:JoseTorre').hexdigest() == lhash
             print('Verified Genesis: ', verif, lhash)
         else:
+            lpovk = VerifyingKey.from_string(lpovk, curve=NIST192p)
             lblkverif = lpovk.verify(lpovs, pickle.dumps(lhash))
             hashverif = lhash == nprevhash
             nhashverif = nhash == hashlib.sha256(pickle.dumps(ntxs)).hexdigest()
             verif = lblkverif & hashverif & nhashverif 
         if verif:
             newblk['povs'] = povsig.sign(pickle.dumps(nhash))
-            newblk['povk'] = povverif
+            newblk['povk'] = povverif.to_string()
             return newblk
         else:
             return False
