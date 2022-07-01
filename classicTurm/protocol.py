@@ -189,7 +189,8 @@ class KademliaProtocol(RPCProtocol):
             log.warning("no response from %s, removing from router", node)
             self.router.remove_contact(node)
             return result
-        print('handling verification response') 
+        print('handling verification response')
+        print('Got response: ', pickle.loads(result))
         log.info("got successful response from %s", node)
         #self.welcome_if_new(node.node.long_id)
         return result

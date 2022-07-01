@@ -319,11 +319,7 @@ class Server:
         """
         tx = self.qled.makeTx(payer.node.long_id, self.node.long_id, amount)
         signed_tx = await self.protocol.call_approveTx(payer,pickle.dumps(tx))
-        print('First part 1st sign: ', signed_tx[0])
-        print('Second part 1st sign: ', signed_tx[1])
         doublesigned_tx = self.qled.signTx(signed_tx[1], self.node.long_id, self.prv_key, self.pub_key)
-        print('First part 2nd sign: ', doublesigned_tx[0])
-        print('Second part 2nd sign: ', doublesigned_tx[1])
         print('Transaction signed twice, sending to verify')
         return await self.send_verify_Tx(pickle.dumps(doublesigned_tx))
 
