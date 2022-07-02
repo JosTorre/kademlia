@@ -94,12 +94,15 @@ async def main():
     ntxs = int(input("Number of Transactions per Block: "))
     nblks = int(input("Number of Blocks: "))
     #Start running the nodes
+    tstartnodes = time.time()
     await startNodes(nnodes, sig_algorithm, ntxs)
+    tfinalstartnodes = time.time() - tstartnodes
     #Start and run the Blockchain
     await runLedger(nnodes, ntxs, nblks)
     global finland_time
     finland_time = time.time()
     await generalStats(nnodes)
+    print('Time to Start nodes and Gen Keys: ', tfinalstartnodes/10)
 
 start_time = time.time()
 asyncio.run(main())
