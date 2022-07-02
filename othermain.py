@@ -6,6 +6,7 @@ import time
 import json
 import sys
 import oqs
+import os
 import psutil 
 from pprint import pprint
 
@@ -95,25 +96,26 @@ async def main():
     ntxs = int(input("Number of Transactions per Block: "))
     nblks = int(input("Number of Blocks: "))
     #Start running the nodes
-    tstartnodes = time.time()
+    start_time = time.time()
     await startNodes(nnodes, sig_algorithm, ntxs)
-    tfinalstartnodes = time.time() - tstartnodes
+    tfinalstartnodes = time.time() - start_time
     #Start and run the Blockchain
     await runLedger(nnodes, ntxs, nblks)
     global finland_time
     finland_time = time.time()
     await generalStats(nnodes)
     print('Time to Start nodes and Gen Keys: ', tfinalstartnodes/10)
-
-start_time = time.time()
-asyncio.run(main())
-#Create Geneis Block and save it into the network
-#asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-ttime = ((finland_time - start_time)/10)
-print("FINISHED in --- %s seconds --- " % ttime)
-print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
-print("Block latency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
-
-with  open('mykademlia/init.txt', 'r') as f:
+    ttime = ((finland_time - start_time)/10)
+    print("FINISHED in --- %s seconds --- " % ttime)
+    print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
+    print("Block latency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
+    
+def printIntro():
+    with  open('mykademlia/init.txt', 'r') as f:
     for line in f:
         print(line)
+
+os.system('clear')
+printIntro()
+asyncio.run(main())
+printIntro()
