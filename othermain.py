@@ -58,7 +58,9 @@ async def runLedger(nnodes, txperblk, nblks):
 
 async def generalStats(nnodes):
     
+    startqtime = time.time()
     lastBlk = await node[1].get_latestBlk()
+    querytime = time.time() - startqtime
     lastBlk = pickle.loads(lastBlk)
     sometxs = lastBlk.get('txs')
     sometx = await node[1].get(sometxs[1])
@@ -73,8 +75,12 @@ async def generalStats(nnodes):
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
     print('\n')
-    print('CPU usage of %s %', psutil.cpu_percent())
-    print('RAM usage of %s ergo of %s %', psutil.virtual_memory(), psutil.virtual_memory().percent)
+    print('\n--- System Stats ---\n')
+    print('CPU usage of ', psutil.cpu_percent(),'%')
+    print('RAM usage of ', psutil.virtual_memory().percent,'%')
+    print('RAM stats: ', psutil.virtual_memory())
+    print('\n--- Time Stats ---\n')
+    print('Query speed of %s seconds'% (querytime/10))
     
 
 async def main():
@@ -102,7 +108,7 @@ asyncio.run(main())
 ttime = ((finland_time - start_time)/10)
 print("FINISHED in --- %s seconds --- " % ttime)
 print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
-print("Block frequency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
+print("Block latency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
 
 with  open('mykademlia/init.txt', 'r') as f:
     for line in f:
