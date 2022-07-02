@@ -6,6 +6,7 @@ import time
 import json
 import oqs
 import sys
+import psutil 
 from pprint import pprint
 
 from mykademlia.network import Server
@@ -56,20 +57,25 @@ async def runLedger(nnodes, txperblk, nblks):
     print("Transactions Made: ", transacted, " Mined Blocks: ", mined_blocks)
 
 async def generalStats(nnodes):
-    for i in range(nnodes):
-        print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
-    print('\n')
+    
     lastBlk = await node[1].get_latestBlk()
     lastBlk = pickle.loads(lastBlk)
     sometxs = lastBlk.get('txs')
     sometx = await node[1].get(sometxs[1])
     sometx = pickle.loads(sometx)
     print('Last Block: ', lastBlk)
+    print('Some Transaction: ', sometx)
     print('Block size: ', sys.getsizeof(lastBlk))
     print('Block size (encoded): ', sys.getsizeof(pickle.dumps(lastBlk)))
-    print('Some Transaction: ', sometx)
     print('Transaction size: ', sys.getsizeof(sometx))
     print('Transaction size (encoded): ', sys.getsizeof(pickle.dumps(sometx)))
+    print('Used memory space per node: \n')
+    for i in range(nnodes):
+        print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
+    print('\n')
+    print('CPU usage of %s %', psutil.cpu_percent())
+    print('RAM usage of %s ergo of %s %', psutil.virtual_memory(), psutil.virtual_memory().percent)
+    
 
 async def main():
 
