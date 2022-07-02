@@ -59,7 +59,7 @@ async def generalStats(nnodes):
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
     print('\n')
-    lastBlk = node[1].get_latestBlk()
+    lastBlk = await node[1].get_latestBlk()
     print('Last Block: ', lastBlk)
     print('Block size: ', sys.getsizeof(lastBlk))
 
