@@ -89,9 +89,9 @@ async def main():
 
     #Introduce Sig Mechanisms
     sigs = oqs.get_enabled_sig_mechanisms()
+    print('Available Post-Quantum Secure Signature Schemes:\n')
     pprint(sigs, compact='True')
     #Get the parameters
-    print('Available Post-Quantum Secure Signature Schemes:\n')
     sig_algorithm = input("Post-quantum Signature Algorithm: ")
     nnodes = int(input("Number of Nodes: "))
     ntxs = int(input("Number of Transactions per Block: "))
