@@ -109,11 +109,11 @@ async def main():
     print("FINISHED in --- %s seconds --- " % ttime)
     print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
     print("Block latency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
-    
+
 def printIntro():
     with  open('mykademlia/init.txt', 'r') as f:
-    for line in f:
-        print(line)
+        for line in f:
+            print(line)
 
 os.system('clear')
 printIntro()
