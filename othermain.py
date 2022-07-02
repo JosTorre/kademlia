@@ -55,10 +55,13 @@ async def runLedger(nnodes, txperblk, nblks):
     print('\n')
     print("Transactions Made: ", transacted, " Mined Blocks: ", mined_blocks)
 
-async def storageStats(nnodes):
+async def generalStats(nnodes):
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
     print('\n')
+    lastBlk = node[1].get_latestBlk()
+    print('Last Block: ', lastBlk)
+    print('Block size: ', sys.getsizeof(lastBlk))
 
 async def main():
 
@@ -74,13 +77,15 @@ async def main():
     await startNodes(nnodes, sig_algorithm, ntxs)
     #Start and run the Blockchain
     await runLedger(nnodes, ntxs, nblks)
-    await storageStats(nnodes)
+    global finland_time
+    finland_time = time.time()
+    await generalStats(nnodes)
 
 start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
 #asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-ttime = ((time.time() - start_time)/10)
+ttime = ((finland_time - start_time)/10)
 print("FINISHED in --- %s seconds --- " % ttime)
 print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
 print("Block frequency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
