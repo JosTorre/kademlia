@@ -4,7 +4,6 @@ import pickle
 import random
 import time
 import json
-import oqs
 import sys
 import psutil 
 from pprint import pprint

@@ -4,8 +4,8 @@ import pickle
 import random
 import time
 import json
-import oqs
 import sys
+import psutil 
 from pprint import pprint
 
 from classicTurm.network import Server
@@ -39,6 +39,8 @@ async def runLedger(nnodes, txperblk, nblks):
     #Create and add Genesis Block
     await node[1].Genesis()
     #Make transactions and mine blocks
+    global mined_blocks
+    global transacted
     mined_blocks = 0
     transacted = 0
     while mined_blocks < nblks:
@@ -52,31 +54,61 @@ async def runLedger(nnodes, txperblk, nblks):
             mined_blocks += 1
     print("Transactions Made: ", transacted, " Mined Blocks: ", mined_blocks)
 
-async def storageStats(nnodes):
+async def generalStats(nnodes):
+    
+    startqtime = time.time()
+    lastBlk = await node[1].get_latestBlk()
+    querytime = time.time() - startqtime
+    lastBlk = pickle.loads(lastBlk)
+    sometxs = lastBlk.get('txs')
+    sometx = await node[1].get(sometxs[1])
+    sometx = pickle.loads(sometx)
+    print('Last Block: ', lastBlk)
+    print('Some Transaction: ', sometx)
+    print('Block size: ', sys.getsizeof(lastBlk))
+    print('Block size (encoded): ', sys.getsizeof(pickle.dumps(lastBlk)))
+    print('Transaction size: ', sys.getsizeof(sometx))
+    print('Transaction size (encoded): ', sys.getsizeof(pickle.dumps(sometx)))
+    print('Used memory space per node: \n')
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
+    print('\n')
+    print('\n--- System Stats ---\n')
+    print('CPU usage of ', psutil.cpu_percent(),'%')
+    print('RAM usage of ', psutil.virtual_memory().percent,'%')
+    print('RAM stats: ', psutil.virtual_memory())
+    print('\n--- Time Stats ---\n')
+    print('Query speed of %s seconds'% (querytime/10))
 
 async def main():
 
     #Introduce Sig Mechanisms
-    print("Available Elliptic Curve Signature Algorithms:")
-    print("NIST192p, BRAINPOOLP192r1, SECP112r1")
+    print("Using NIST192p Elliptic Curve Signature Algorithm:")
     #Get the parameters
-    sig_algorithm = 'NIST192p'  #input("Elliptic Curve Signature Algorithm: ")
+    sig_algorithm = 'NIST192p'
     nnodes = int(input("Number of Nodes: "))
     ntxs = int(input("Number of Transactions per Block: "))
     nblks = int(input("Number of Blocks: "))
     #Start running the nodes
+    tstartnodes = time.time()
     await startNodes(nnodes, sig_algorithm, ntxs)
+    tfinalstartnodes = time.time() - tstartnodes
     #Start and run the Blockchain
     await runLedger(nnodes, ntxs, nblks)
-    await storageStats(nnodes)
+    global finland_time
+    finland_time = time.time()
+    await generalStats(nnodes)
+    print('Time to Start nodes and Gen Keys: ', tfinalstartnodes/10)
 
 start_time = time.time()
 asyncio.run(main())
 #Create Geneis Block and save it into the network
 #asyncio.run(node[5].publishTransaction(("127.0.0.1",1007),35))
-print("Finished in --- %s seconds --- " % ((time.time() - start_time)/10))
+ttime = ((finland_time - start_time)/10)
+print("Finished in --- %s seconds --- " % ttime)
+print("Mean time per transaction --- %s seconds --- " % (ttime/float(transacted)))
+print("Block latency of --- %s seconds --- per block" % (ttime/float(mined_blocks)))
+
 with  open('classicTurm/init.txt', 'r') as f:
     for line in f:
         print(line)
