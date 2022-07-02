@@ -59,7 +59,7 @@ async def generalStats(nnodes):
     for i in range(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
     print('\n')
-    lastBlk = await node[1].get_latestBlk())
+    lastBlk = await node[1].get_latestBlk()
     lastBlk = pickle. loads(lastBlk)
     sometxs = lastBlk.get(txs)
     sometx = await node[1].get(sometxs[1])
