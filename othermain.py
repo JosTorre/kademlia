@@ -5,6 +5,7 @@ import random
 import time
 import json
 import sys
+import oqs
 import psutil 
 from pprint import pprint
 
