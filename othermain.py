@@ -60,14 +60,16 @@ async def generalStats(nnodes):
         print('Node ', i, ' stored ', sys.getsizeof(node[i].storage.data), ' bytes.')
     print('\n')
     lastBlk = await node[1].get_latestBlk()
-    lastBlk = pickle. loads(lastBlk)
+    lastBlk = pickle.loads(lastBlk)
     sometxs = lastBlk.get('txs')
     sometx = await node[1].get(sometxs[1])
+    sometx = pickle.loads(sometx)
     print('Last Block: ', lastBlk)
     print('Block size: ', sys.getsizeof(lastBlk))
     print('Block size (encoded): ', sys.getsizeof(pickle.dumps(lastBlk)))
     print('Some Transaction: ', sometx)
     print('Transaction size: ', sys.getsizeof(sometx))
+    print('Transaction size (encoded): ', sys.getsizeof(pickle.dumps(sometx)))
 
 async def main():
 
